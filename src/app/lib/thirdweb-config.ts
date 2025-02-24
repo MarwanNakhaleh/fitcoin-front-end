@@ -19,3 +19,23 @@ export const wallets = [
 export const client = createThirdwebClient({
   clientId: clientId,
 });
+
+export const hardhatChain = {
+  chainId: 31337,
+  name: "Hardhat",
+  rpcUrl: "http://localhost:8545",
+  nativeCurrency: {
+    name: "ETH",
+    symbol: "ETH",
+    decimals: 18,
+  },
+};
+
+export const detectChain = () => {
+  if (typeof window !== "undefined") {
+    // @ts-ignore
+    const chainId = window.ethereum?.chainId;
+    return chainId;
+  }
+  return null;
+}

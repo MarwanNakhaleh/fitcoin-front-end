@@ -2,11 +2,17 @@
 
 import { ConnectButton, useActiveWallet } from "thirdweb/react";
 import { client, wallets } from "@/app/lib/thirdweb-config";
-
-import { Header } from "@/app/components/header";
+import { useRouter } from "next/navigation";
+import { useWallet } from "./providers";
 
 export default function Home() {
-  const wallet = useActiveWallet();
+  const { wallet, setWallet } = useWallet();
+  const router = useRouter();
+
+  const handleDisconnect = () => {
+    setWallet(undefined);
+    router.push('/');
+  }
 
   const handleConnect = async () => {
     try {
@@ -27,6 +33,8 @@ export default function Home() {
       const data = await response.json();
       if (data.isVerifiedUser) {
         console.log('User is verified');
+        setWallet(wallet);
+        router.push('/dashboard');
       } else {
         console.error('User verification failed');
       }
@@ -38,7 +46,6 @@ export default function Home() {
   return (
     <main className="p-4 pb-10 min-h-[100vh] flex items-center justify-center container max-w-screen-lg mx-auto">
       <div className="py-20">
-        <Header wallet={wallet} />
         <div className="flex justify-center mb-20">
           <ConnectButton
             client={client}
@@ -48,6 +55,7 @@ export default function Home() {
               url: "https://example.com",
             }}
             onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
           />
         </div>
       </div>
