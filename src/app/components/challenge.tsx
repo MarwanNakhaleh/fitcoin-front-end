@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ContractInfo } from "@/app/components/contract-info";
 import { Modal } from "@/app/components/modal";
+import { CreateChallenge } from "@/app/components/create-challenge";
 
 interface ChallengeProps {
     challengeContract: any;
@@ -161,112 +162,12 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
                     </button>
 
                     <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                        <h2 className="mb-4 text-xl font-bold">Create Challenge</h2>
-                        
-                        <div className="flex items-center mb-4">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="sr-only peer"
-                                    checked={isMultiplayer}
-                                    onChange={(e) => setIsMultiplayer(e.target.checked)}
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                <span className="ms-3 text-sm font-medium text-gray-800">Multiplayer Challenge</span>
-                            </label>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 text-gray-800">
-                            <div>
-                                <label className="block mb-1 text-sm font-medium">Length of Challenge (days)</label>
-                                <input
-                                    type="number"
-                                    value={lengthOfChallenge}
-                                    onChange={(e) => setLengthOfChallenge(parseInt(e.target.value))}
-                                    className="w-full p-2 border rounded"
-                                    placeholder="1"
-                                />
-                            </div>
-                            <div>
-                                <label className="block mb-1 text-sm font-medium">Challenge Metrics & Targets</label>
-                                <div className="space-y-2">
-                                    {[
-                                        { id: 0, label: "Number of steps" },
-                                        { id: 1, label: "Number of miles walked or run" },
-                                        { id: 2, label: "Number of miles cycled" },
-                                        { id: 3, label: "Number of calories burned" }
-                                    ].map(({ id, label }) => (
-                                        <div key={id} className="flex flex-col space-y-2">
-                                            <label className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={id in challengeMetricsWithTargets}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                            setChallengeMetricsWithTargets(prev => ({
-                                                                ...prev,
-                                                                [id]: 0
-                                                            }));
-                                                        } else {
-                                                            setChallengeMetricsWithTargets(prev => {
-                                                                const newState = { ...prev };
-                                                                delete newState[id];
-                                                                return newState;
-                                                            });
-                                                        }
-                                                    }}
-                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                />
-                                                <span className="text-sm text-gray-700">{label}</span>
-                                            </label>
-                                            {id in challengeMetricsWithTargets && (
-                                                <div className="ml-6">
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        step="1"
-                                                        value={challengeMetricsWithTargets[id] || ''}
-                                                        onChange={(e) => {
-                                                            const value = parseInt(e.target.value);
-                                                            if (value > 0 || e.target.value === '') {
-                                                                setChallengeMetricsWithTargets(prev => ({
-                                                                    ...prev,
-                                                                    [id]: value || 0
-                                                                }));
-                                                            }
-                                                        }}
-                                                        className="w-full p-2 border rounded"
-                                                        placeholder={`Enter target ${label.toLowerCase()}`}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            {isMultiplayer && (
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium">Max Competitors (multiplayer only)</label>
-                                    <input
-                                        type="number"
-                                        value={maxCompetitors}
-                                        onChange={(e) => setMaxCompetitors(e.target.value)}
-                                        className="w-full p-2 border rounded"
-                                        placeholder="5"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={isMultiplayer ? handleCreateMultiplayerChallenge : handleCreateChallenge}
-                                className={`px-4 py-2 text-white rounded hover:bg-opacity-90 ${
-                                    isMultiplayer ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
-                                }`}
-                            >
-                                {isMultiplayer ? 'Create Multiplayer Challenge' : 'Create Solo Challenge'}
-                            </button>
-                        </div>
+                        <CreateChallenge
+                            challengeContract={challengeContract}
+                            multiplayerChallengeContract={multiplayerChallengeContract}
+                            wallet={wallet}
+                            onClose={() => setIsModalOpen(false)}
+                        />
                     </Modal>
                     
                     <div className="p-4 bg-white rounded-lg shadow">

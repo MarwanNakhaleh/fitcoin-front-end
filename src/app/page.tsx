@@ -9,6 +9,7 @@ import { useWallet } from "@/app/providers";
 import { Wallet } from "thirdweb/wallets";
 import { Header } from "@/app/components/header";
 import { ChallengeInteraction } from "@/app/components/challenge";
+import { MyChallenges } from "@/app/components/my-challenges";
 
 const Dashboard = () => {
     const { wallet, chain, setWallet, setChain } = useWallet();
@@ -119,11 +120,19 @@ const Dashboard = () => {
             />
 
             {wallet ? (
-                <ChallengeInteraction
-                    challengeContract={challengeContract}
-                    multiplayerChallengeContract={multiplayerChallengeContract}
-                    wallet={wallet}
-                />
+                <>
+                    {challengeContract && multiplayerChallengeContract && (
+                        <MyChallenges
+                            challengeContract={challengeContract}
+                            wallet={wallet}
+                        />
+                    )}
+                    <ChallengeInteraction
+                        challengeContract={challengeContract}
+                        multiplayerChallengeContract={multiplayerChallengeContract}
+                        wallet={wallet}
+                    />
+                </>
             ) : (
                 <p className="text-lg font-bold text-gray-800">Connect your wallet to start</p>
             )}
