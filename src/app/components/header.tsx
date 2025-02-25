@@ -20,14 +20,12 @@ export const Header: React.FC<HeaderProps> = ({ wallet, selectedChain, setSelect
             {wallet ? (
                 <>
                     <h2 className="mb-2 text-xl">Welcome, connected user!</h2>
-                    <label htmlFor="chain-select" className="sr-only">
-                        Select Blockchain Network
-                    </label>
+                    <p className="mb-2">Select Blockchain network:</p>
                     <select
                         id="chain-select"
                         value={selectedChain.id.toString()}
                         onChange={(e) => setSelectedChain(getChainFromId(e.target.value))}
-                        className="border border-gray-300 p-2 rounded-md focus:outline-none focus:border-blue-500"
+                        className="bg-white text-black border border-gray-300 p-2 rounded-md focus:outline-none focus:border-blue-500 w-full"
                     >
                         <option value={localhost.id.toString()}>Localhost</option>
                         <option value={hardhat.id.toString()}>Hardhat</option>
