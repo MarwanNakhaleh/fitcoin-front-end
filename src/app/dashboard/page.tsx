@@ -1,6 +1,6 @@
 "use client";
 
-import { getContract } from "thirdweb";
+import { Chain, getContract } from "thirdweb";
 import { arbitrum, arbitrumSepolia, base, baseSepolia, optimism, optimismSepolia } from "thirdweb/chains";
 import { client, hardhatChain, wallets } from "@/app/lib/thirdweb-config";
 import { deployedContracts } from "@/globals";
@@ -8,6 +8,7 @@ import { ConnectButton } from "thirdweb/react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/app/providers";
 import { Wallet } from "thirdweb/wallets";
+import { Header } from "@/app/components/header";
 
 const Dashboard = () => {
     const { wallet, chain, setWallet, setChain } = useWallet();
@@ -38,7 +39,8 @@ const Dashboard = () => {
     const getContractAddressFromChain = (): string => {
         console.log("Chain", chain);
         if (!chain) return "";
-        switch (chain.id) {
+        const chainchain = chain as Chain;
+        switch (chainchain.id) {
             case hardhatChain.chainId:
                 return deployedContracts.localhost.challenge ?? "";
             case base.id:
@@ -62,20 +64,20 @@ const Dashboard = () => {
     const challengeContract = contractAddress && chain ? 
         getContract({
             address: contractAddress,
-            chain,
+            chain: chain as Chain, 
             client,
         }) : null;
       
     return (
         <>
-            {wallet ? (
+            <Header 
+                wallet={wallet} 
+                selectedChain={chain as Chain} 
+                setSelectedChain={setChain}
+            />
+            {wallet && (
                 <div>
-                    <h2>Welcome, connected user!</h2>
                     <p>Contract address: {challengeContract?.address || "Not connected to a supported chain"}</p>
-                </div>
-            ) : (
-                <div>
-                    <h2>Please connect your wallet to access more features.</h2>
                 </div>
             )}
             <ConnectButton
