@@ -10,7 +10,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ wallet, selectedChain, setSelectedChain }) => {
-    // Function to convert chain ID to Chain object
     const getChainFromId = (chainId: string): Chain => {
         return chainMap[chainId] || selectedChain;
     };

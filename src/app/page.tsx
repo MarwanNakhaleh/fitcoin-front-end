@@ -58,34 +58,43 @@ const Dashboard = () => {
         setWallet(undefined);
     }
 
-    const getContractAddressFromChain = (): string => {
-        console.log("Chain", chain);
-        if (!chain) return "";
-        const chainchain = chain as Chain;
-        switch (chainchain.id) {
-            case hardhatChain.chainId:
-                return deployedContracts.localhost.challenge ?? "";
-            case base.id:
-                return deployedContracts.base.challenge ?? "";
-            case baseSepolia.id:
-                return deployedContracts.baseSepolia.challenge ?? "";
-            case arbitrum.id:
-                return deployedContracts.arbitrum.challenge ?? "";
-            case arbitrumSepolia.id:
-                return deployedContracts.arbitrumSepolia.challenge ?? "";
-            case optimism.id:
-                return deployedContracts.optimism.challenge ?? "";
-            case optimismSepolia.id:
-                return deployedContracts.optimismSepolia.challenge ?? "";
-            default:
-                return "";
+    const getContractAddressesFromChain = (): {challenge: string, multiplayerChallenge: string} => {
+        let contracts = {challenge: "", multiplayerChallenge: ""};
+        if (!chain) return contracts;
+        
+        const chainId = (chain as Chain).id.toString();
+        
+        const networkByChainId: Record<string, keyof typeof deployedContracts> = {
+            [hardhatChain.chainId.toString()]: "localhost",
+            [base.id.toString()]: "base",
+            [baseSepolia.id.toString()]: "baseSepolia",
+            [arbitrum.id.toString()]: "arbitrum",
+            [arbitrumSepolia.id.toString()]: "arbitrumSepolia",
+            [optimism.id.toString()]: "optimism",
+            [optimismSepolia.id.toString()]: "optimismSepolia",
+        };
+        
+        const network = networkByChainId[chainId];
+        if (network){
+            contracts = {
+                "challenge": deployedContracts[network].challenge || "",
+                "multiplayerChallenge": deployedContracts[network].multiplayerChallenge || ""
+            }
         }
+        return contracts;
     }
 
-    const contractAddress = getContractAddressFromChain();
-    const challengeContract = contractAddress && chain ?
+    const contractAddress = getContractAddressesFromChain();
+    const challengeContract = (contractAddress.challenge !== "") && chain ?
         getContract({
-            address: contractAddress,
+            address: contractAddress.challenge,
+            chain: chain as Chain,
+            client,
+        }) : null;
+
+    const multiplayerChallengeContract = (contractAddress.challenge !== "") && chain ?
+        getContract({
+            address: contractAddress.multiplayerChallenge,
             chain: chain as Chain,
             client,
         }) : null;
@@ -98,7 +107,10 @@ const Dashboard = () => {
                 setSelectedChain={setChain}
             />
             {wallet && (
-                <p className="mb-2 text-lg font-bold text-gray-800">Contract address: {challengeContract?.address || "Not connected to a supported chain"}</p>
+                <>
+                    <p className="mb-2 text-lg font-bold text-gray-800">Solo challenge contract address: {challengeContract?.address || "Not connected to a supported chain"}</p>
+                    <p className="mb-2 text-lg font-bold text-gray-800">Multiplayer challenge contract address: {multiplayerChallengeContract?.address || "Not connected to a supported chain"}</p>
+                </>
             )}
             <ConnectButton
                 client={client}
