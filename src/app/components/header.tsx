@@ -1,6 +1,7 @@
 import { Wallet } from "thirdweb/wallets";
 import { Chain } from "thirdweb";
 import { arbitrum, arbitrumSepolia, base, baseSepolia, optimism, optimismSepolia, localhost, hardhat } from "thirdweb/chains";
+import { chainMap } from "@/globals";
 
 interface HeaderProps {
     wallet: Wallet | undefined,
@@ -11,36 +12,22 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ wallet, selectedChain, setSelectedChain }) => {
     // Function to convert chain ID to Chain object
     const getChainFromId = (chainId: string): Chain => {
-        switch (chainId) {
-            case localhost.id.toString():
-                return localhost;
-            case hardhat.id.toString():
-                return hardhat;
-            case baseSepolia.id.toString():
-                return baseSepolia;
-            case arbitrumSepolia.id.toString():
-                return arbitrumSepolia;
-            case optimismSepolia.id.toString():
-                return optimismSepolia;
-            case base.id.toString():
-                return base;
-            case arbitrum.id.toString():
-                return arbitrum;
-            case optimism.id.toString():
-                return optimism;
-            default:
-                return selectedChain; // Return current chain if not found
-        }
+        return chainMap[chainId] || selectedChain;
     };
 
     return (
-        <>
+        <div className="p-4 bg-zinc-800 rounded shadow">
             {wallet ? (
-                <div>
-                    <h2>Welcome, connected user!</h2>
+                <>
+                    <h2 className="mb-2 text-xl">Welcome, connected user!</h2>
+                    <label htmlFor="chain-select" className="sr-only">
+                        Select Blockchain Network
+                    </label>
                     <select
+                        id="chain-select"
                         value={selectedChain.id.toString()}
                         onChange={(e) => setSelectedChain(getChainFromId(e.target.value))}
+                        className="border border-gray-300 p-2 rounded-md focus:outline-none focus:border-blue-500"
                     >
                         <option value={localhost.id.toString()}>Localhost</option>
                         <option value={hardhat.id.toString()}>Hardhat</option>
@@ -51,13 +38,11 @@ export const Header: React.FC<HeaderProps> = ({ wallet, selectedChain, setSelect
                         <option value={arbitrum.id.toString()}>Arbitrum</option>
                         <option value={optimism.id.toString()}>Optimism</option>
                     </select>
-                </div>
+                </>
             ) : (
-                <div>
-                    <h2>Please connect your wallet to access more features.</h2>
-                </div>
+                <h2 className="mb-2 text-xl">Please connect your wallet to access more features.</h2>
             )}
-        </>
+        </div>
     );
 };
 

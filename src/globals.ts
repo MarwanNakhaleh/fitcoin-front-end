@@ -1,3 +1,8 @@
+import { Chain } from "thirdweb";
+import { localhost } from "thirdweb/chains";
+import { arbitrumSepolia, baseSepolia, hardhat } from "thirdweb/chains";
+import { base, optimism, optimismSepolia } from "thirdweb/chains";
+import { arbitrum } from "thirdweb/chains";
 
 export const deployedContracts = {
     localhost: {
@@ -20,6 +25,16 @@ export const deployedContracts = {
     },
     optimismSepolia: {
         challenge: process.env.NEXT_PUBLIC_OPTIMISM_SEPOLIA_CHALLENGE_CONTRACT_ADDRESS,
-    }, 
-    
+    },
 }
+
+export const chainMap: Record<string, Chain> = {
+    [localhost.id.toString()]: localhost,
+    [hardhat.id.toString()]: hardhat,
+    [baseSepolia.id.toString()]: baseSepolia,
+    [arbitrumSepolia.id.toString()]: arbitrumSepolia,
+    [optimismSepolia.id.toString()]: optimismSepolia,
+    [base.id.toString()]: base,
+    [arbitrum.id.toString()]: arbitrum,
+    [optimism.id.toString()]: optimism,
+};
