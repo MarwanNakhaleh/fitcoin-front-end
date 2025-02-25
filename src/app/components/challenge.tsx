@@ -18,9 +18,8 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
     const [challengeId, setChallengeId] = useState<string>("");
     const [betAmount, setBetAmount] = useState<string>("");
     const [bettingFor, setBettingFor] = useState<boolean>(true);
-    const [lengthOfChallenge, setLengthOfChallenge] = useState<string>("");
-    const [challengeMetrics, setChallengeMetrics] = useState<string>("0");
-    const [targetMeasurements, setTargetMeasurements] = useState<string>("100");
+    const [lengthOfChallenge, setLengthOfChallenge] = useState<number>(0);
+    const [challengeMetricsWithTargets, setChallengeMetricsWithTargets] = useState<Record<number, number>>({});
     const [maxCompetitors, setMaxCompetitors] = useState<string>("5");
     const [measurements, setMeasurements] = useState<string>("100");
     const [txStatus, setTxStatus] = useState<string>("");
@@ -29,14 +28,17 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
 
     const handleCreateChallenge = async () => {
         if (!challengeContract || !multiplayerChallengeContract || !wallet) return;
-
+        console.log("Creating challenge...");
+        
         try {
             setTxStatus("Creating challenge...");
-            const metrics = challengeMetrics.split(',').map(m => parseInt(m.trim()));
-            const targets = targetMeasurements.split(',').map(t => parseInt(t.trim()));
+            const lengthOfChallengeInSeconds = lengthOfChallenge * 86400;
+            
+            const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
+            const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
 
             const tx = await challengeContract.call("createChallenge", [
-                parseInt(lengthOfChallenge),
+                lengthOfChallengeInSeconds,
                 metrics,
                 targets
             ]);
@@ -54,11 +56,13 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
 
         try {
             setTxStatus("Creating multiplayer challenge...");
-            const metrics = challengeMetrics.split(',').map(m => parseInt(m.trim()));
-            const targets = targetMeasurements.split(',').map(t => parseInt(t.trim()));
+            const lengthOfChallengeInSeconds = lengthOfChallenge * 86400;
+            
+            const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
+            const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
 
             const tx = await multiplayerChallengeContract.call("createMultiplayerChallenge", [
-                parseInt(lengthOfChallenge),
+                lengthOfChallengeInSeconds,
                 metrics,
                 targets,
                 parseInt(maxCompetitors)
@@ -174,34 +178,71 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 text-gray-800">
                             <div>
-                                <label className="block mb-1 text-sm font-medium">Length of Challenge (seconds)</label>
+                                <label className="block mb-1 text-sm font-medium">Length of Challenge (days)</label>
                                 <input
                                     type="number"
                                     value={lengthOfChallenge}
-                                    onChange={(e) => setLengthOfChallenge(e.target.value)}
+                                    onChange={(e) => setLengthOfChallenge(parseInt(e.target.value))}
                                     className="w-full p-2 border rounded"
-                                    placeholder="86400"
+                                    placeholder="1"
                                 />
                             </div>
                             <div>
-                                <label className="block mb-1 text-sm font-medium">Challenge Metrics (comma separated)</label>
-                                <input
-                                    type="text"
-                                    value={challengeMetrics}
-                                    onChange={(e) => setChallengeMetrics(e.target.value)}
-                                    className="w-full p-2 border rounded"
-                                    placeholder="0,1,2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block mb-1 text-sm font-medium">Target Measurements (comma separated)</label>
-                                <input
-                                    type="text"
-                                    value={targetMeasurements}
-                                    onChange={(e) => setTargetMeasurements(e.target.value)}
-                                    className="w-full p-2 border rounded"
-                                    placeholder="100,200,300"
-                                />
+                                <label className="block mb-1 text-sm font-medium">Challenge Metrics & Targets</label>
+                                <div className="space-y-2">
+                                    {[
+                                        { id: 0, label: "Number of steps" },
+                                        { id: 1, label: "Number of miles walked or run" },
+                                        { id: 2, label: "Number of miles cycled" },
+                                        { id: 3, label: "Number of calories burned" }
+                                    ].map(({ id, label }) => (
+                                        <div key={id} className="flex flex-col space-y-2">
+                                            <label className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={id in challengeMetricsWithTargets}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setChallengeMetricsWithTargets(prev => ({
+                                                                ...prev,
+                                                                [id]: 0
+                                                            }));
+                                                        } else {
+                                                            setChallengeMetricsWithTargets(prev => {
+                                                                const newState = { ...prev };
+                                                                delete newState[id];
+                                                                return newState;
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                                <span className="text-sm text-gray-700">{label}</span>
+                                            </label>
+                                            {id in challengeMetricsWithTargets && (
+                                                <div className="ml-6">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        step="1"
+                                                        value={challengeMetricsWithTargets[id] || ''}
+                                                        onChange={(e) => {
+                                                            const value = parseInt(e.target.value);
+                                                            if (value > 0 || e.target.value === '') {
+                                                                setChallengeMetricsWithTargets(prev => ({
+                                                                    ...prev,
+                                                                    [id]: value || 0
+                                                                }));
+                                                            }
+                                                        }}
+                                                        className="w-full p-2 border rounded"
+                                                        placeholder={`Enter target ${label.toLowerCase()}`}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                             {isMultiplayer && (
                                 <div>
