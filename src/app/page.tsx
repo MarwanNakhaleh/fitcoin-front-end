@@ -8,6 +8,7 @@ import { ConnectButton } from "thirdweb/react";
 import { useWallet } from "@/app/providers";
 import { Wallet } from "thirdweb/wallets";
 import { Header } from "@/app/components/header";
+import { ChallengeInteraction } from "@/app/components/challenge";
 
 const Dashboard = () => {
     const { wallet, chain, setWallet, setChain } = useWallet();
@@ -58,12 +59,12 @@ const Dashboard = () => {
         setWallet(undefined);
     }
 
-    const getContractAddressesFromChain = (): {challenge: string, multiplayerChallenge: string} => {
-        let contracts = {challenge: "", multiplayerChallenge: ""};
+    const getContractAddressesFromChain = (): { challenge: string, multiplayerChallenge: string } => {
+        let contracts = { challenge: "", multiplayerChallenge: "" };
         if (!chain) return contracts;
-        
+
         const chainId = (chain as Chain).id.toString();
-        
+
         const networkByChainId: Record<string, keyof typeof deployedContracts> = {
             [hardhatChain.chainId.toString()]: "localhost",
             [base.id.toString()]: "base",
@@ -73,9 +74,9 @@ const Dashboard = () => {
             [optimism.id.toString()]: "optimism",
             [optimismSepolia.id.toString()]: "optimismSepolia",
         };
-        
+
         const network = networkByChainId[chainId];
-        if (network){
+        if (network) {
             contracts = {
                 "challenge": deployedContracts[network].challenge || "",
                 "multiplayerChallenge": deployedContracts[network].multiplayerChallenge || ""
@@ -92,7 +93,7 @@ const Dashboard = () => {
             client,
         }) : null;
 
-    const multiplayerChallengeContract = (contractAddress.challenge !== "") && chain ?
+    const multiplayerChallengeContract = (contractAddress.multiplayerChallenge !== "") && chain ?
         getContract({
             address: contractAddress.multiplayerChallenge,
             chain: chain as Chain,
@@ -106,12 +107,6 @@ const Dashboard = () => {
                 selectedChain={chain as Chain}
                 setSelectedChain={setChain}
             />
-            {wallet && (
-                <>
-                    <p className="mb-2 text-lg font-bold text-gray-800">Solo challenge contract address: {challengeContract?.address || "Not connected to a supported chain"}</p>
-                    <p className="mb-2 text-lg font-bold text-gray-800">Multiplayer challenge contract address: {multiplayerChallengeContract?.address || "Not connected to a supported chain"}</p>
-                </>
-            )}
             <ConnectButton
                 client={client}
                 wallets={wallets}
@@ -122,6 +117,16 @@ const Dashboard = () => {
                 onConnect={handleConnect}
                 onDisconnect={handleDisconnect}
             />
+
+            {wallet ? (
+                <ChallengeInteraction
+                    challengeContract={challengeContract}
+                    multiplayerChallengeContract={multiplayerChallengeContract}
+                    wallet={wallet}
+                />
+            ) : (
+                <p className="text-lg font-bold text-gray-800">Connect your wallet to start</p>
+            )}
         </div>
     )
 };
