@@ -30,14 +30,14 @@ export default function TermsOfService() {
           <li className="mb-2">Use the materials for any commercial purpose</li>
           <li className="mb-2">Attempt to decompile or reverse engineer any software contained in Fitcoin</li>
           <li className="mb-2">Remove any copyright or other proprietary notations from the materials</li>
-          <li className="mb-2">Transfer the materials to another person or "mirror" the materials on any other server</li>
+          <li className="mb-2">Transfer the materials to another person or &quot;mirror&quot; the materials on any other server</li>
         </ul>
       </section>
 
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Disclaimer</h2>
         <p className="mb-4 text-gray-700">
-          The materials on Fitcoin are provided on an 'as is' basis. Fitcoin makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+          The materials on Fitcoin are provided on an &apos;as is&apos; basis. Fitcoin makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
         </p>
       </section>
 
@@ -58,7 +58,7 @@ export default function TermsOfService() {
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Links</h2>
         <p className="mb-4 text-gray-700">
-          Fitcoin has not reviewed all of the sites linked to its application and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Fitcoin of the site. Use of any such linked website is at the user's own risk.
+          Fitcoin has not reviewed all of the sites linked to its application and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Fitcoin of the site. Use of any such linked website is at the user&apos;s own risk.
         </p>
       </section>
 
