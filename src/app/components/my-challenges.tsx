@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useReadContract } from "thirdweb/react";
+import { Wallet } from "thirdweb/wallets";
 
 interface MyChallengesProps {
     challengeContract: any;
-    wallet: any;
+    wallet: Wallet;
 }
 
 export const MyChallenges: React.FC<MyChallengesProps> = ({
@@ -15,24 +17,25 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { data, isLoading } = useReadContract({
+        contract: challengeContract,
+        method: "function getChallengesForChallenger(address challenger)",
+        params: [wallet.getAccount()?.address as string]
+    });
+
     useEffect(() => {
         const fetchChallenges = async () => {
+            console.log("IsLoading:", isLoading);
             if (!challengeContract || !wallet) {
                 setLoading(false);
                 return;
             }
 
             try {
-                setLoading(true);
+                setLoading(isLoading);
                 setError(null);
 
-                // Get the connected wallet's address
-                const address = wallet.address;
-                
-                const userChallenges = await challengeContract.read.getChallengesForChallenger([address]);
-                
-                console.log("User challenges:", userChallenges);
-                setChallenges(userChallenges);
+                console.log("User challenges:", data);
             } catch (err: any) {
                 console.error("Error fetching challenges:", err);
                 setError(`Error fetching challenges: ${err.message || JSON.stringify(err)}`);
@@ -42,7 +45,7 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
         };
 
         fetchChallenges();
-    }, [challengeContract, wallet]);
+    }, [challengeContract, wallet, isLoading]);
 
     if (loading) {
         return (

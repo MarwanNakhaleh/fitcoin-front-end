@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { prepareContractCall, sendAndConfirmTransaction } from "thirdweb";
+import { Account, Wallet } from "thirdweb/wallets";
 
 interface CreateChallengeProps {
     challengeContract: any;
     multiplayerChallengeContract: any;
-    wallet: any;
+    wallet: Wallet;
     onClose: () => void;
 }
 
@@ -24,22 +26,31 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
     const handleCreateChallenge = async () => {
         if (!challengeContract || !multiplayerChallengeContract || !wallet) return;
         console.log("Creating challenge...");
-        
+
         try {
             setTxStatus("Creating challenge...");
             const lengthOfChallengeInSeconds = lengthOfChallenge * 86400;
-            
+
             const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
             const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
 
-            const tx = await challengeContract.call("createChallenge", [
-                lengthOfChallengeInSeconds,
-                metrics,
-                targets
-            ]);
+            // const tx = await challengeContract.call("createChallenge", [
+            //     lengthOfChallengeInSeconds,
+            //     metrics,
+            //     targets
+            // ]);
+            const tx = prepareContractCall({
+                contract: challengeContract,
+                method: "function createChallenge(uint256 _lengthOfChallenge, uint8[] calldata _challengeMetrics, uint256[] calldata _targetMeasurementsForEachMetric)",
+                params: [BigInt(lengthOfChallengeInSeconds), metrics, targets.map(t => BigInt(t))],
+            });
+            const transactionReceipt = await sendAndConfirmTransaction({
+                account: wallet.getAccount() as Account,
+                transaction: tx,
+            });
 
-            setTxStatus(`Challenge created! Transaction: ${tx.receipt.transactionHash}`);
-            console.log("Challenge created:", tx);
+            setTxStatus(`Challenge created! Transaction: ${transactionReceipt.transactionHash}`);
+            console.log("Challenge created");
             onClose();
         } catch (error) {
             console.error("Error creating challenge:", error);
@@ -53,7 +64,7 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
         try {
             setTxStatus("Creating multiplayer challenge...");
             const lengthOfChallengeInSeconds = lengthOfChallenge * 86400;
-            
+
             const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
             const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
 
@@ -76,7 +87,7 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
     return (
         <>
             <h2 className="mb-4 text-xl font-bold">Create Challenge</h2>
-            
+
             <div className="flex items-center mb-4">
                 <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -174,9 +185,8 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
             <div className="flex gap-4 mt-4">
                 <button
                     onClick={isMultiplayer ? handleCreateMultiplayerChallenge : handleCreateChallenge}
-                    className={`px-4 py-2 text-white rounded hover:bg-opacity-90 ${
-                        isMultiplayer ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
+                    className={`px-4 py-2 text-white rounded hover:bg-opacity-90 ${isMultiplayer ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
                 >
                     {isMultiplayer ? 'Create Multiplayer Challenge' : 'Create Solo Challenge'}
                 </button>

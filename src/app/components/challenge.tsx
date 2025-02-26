@@ -19,63 +19,10 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
     const [challengeId, setChallengeId] = useState<string>("");
     const [betAmount, setBetAmount] = useState<string>("");
     const [bettingFor, setBettingFor] = useState<boolean>(true);
-    const [lengthOfChallenge, setLengthOfChallenge] = useState<number>(0);
-    const [challengeMetricsWithTargets, setChallengeMetricsWithTargets] = useState<Record<number, number>>({});
-    const [maxCompetitors, setMaxCompetitors] = useState<string>("5");
     const [measurements, setMeasurements] = useState<string>("100");
     const [txStatus, setTxStatus] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [isMultiplayer, setIsMultiplayer] = useState<boolean>(false);
 
-    const handleCreateChallenge = async () => {
-        if (!challengeContract || !multiplayerChallengeContract || !wallet) return;
-        console.log("Creating challenge...");
-        
-        try {
-            setTxStatus("Creating challenge...");
-            const lengthOfChallengeInSeconds = lengthOfChallenge * 86400;
-            
-            const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
-            const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
-
-            const tx = await challengeContract.call("createChallenge", [
-                lengthOfChallengeInSeconds,
-                metrics,
-                targets
-            ]);
-
-            setTxStatus(`Challenge created! Transaction: ${tx.receipt.transactionHash}`);
-            console.log("Challenge created:", tx);
-        } catch (error) {
-            console.error("Error creating challenge:", error);
-            setTxStatus(`Error: ${error}`);
-        }
-    };
-
-    const handleCreateMultiplayerChallenge = async () => {
-        if (!multiplayerChallengeContract || !wallet) return;
-
-        try {
-            setTxStatus("Creating multiplayer challenge...");
-            const lengthOfChallengeInSeconds = lengthOfChallenge * 86400;
-            
-            const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
-            const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
-
-            const tx = await multiplayerChallengeContract.call("createMultiplayerChallenge", [
-                lengthOfChallengeInSeconds,
-                metrics,
-                targets,
-                parseInt(maxCompetitors)
-            ]);
-
-            setTxStatus(`Multiplayer challenge created! Transaction: ${tx.receipt.transactionHash}`);
-            console.log("Multiplayer challenge created:", tx);
-        } catch (error) {
-            console.error("Error creating multiplayer challenge:", error);
-            setTxStatus(`Error: ${error}`);
-        }
-    };
 
     const handlePlaceBet = async () => {
         if (!challengeContract || !wallet) return;
