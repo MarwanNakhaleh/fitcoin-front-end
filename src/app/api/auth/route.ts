@@ -9,7 +9,10 @@ export async function POST(request: Request) {
 			return Response.json({ error: "Invalid request" }, { status: 400 });
 		}
 
-		return Response.json({ isVerifiedUser: true }, { status: 200 });
+		return Response.json(
+			{ isVerifiedUser: true, message, nonce, signature }, 
+			{ status: 200 }
+		);
 	} catch (e) {
 		console.error(e);
 		return Response.json(

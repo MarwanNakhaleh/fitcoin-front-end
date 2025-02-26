@@ -33,12 +33,7 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
 
             const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
             const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
-
-            // const tx = await challengeContract.call("createChallenge", [
-            //     lengthOfChallengeInSeconds,
-            //     metrics,
-            //     targets
-            // ]);
+            
             const tx = prepareContractCall({
                 contract: challengeContract,
                 method: "function createChallenge(uint256 _lengthOfChallenge, uint8[] calldata _challengeMetrics, uint256[] calldata _targetMeasurementsForEachMetric)",

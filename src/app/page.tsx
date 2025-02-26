@@ -1,47 +1,68 @@
 "use client";
 
-import { Chain, getContract } from "thirdweb";
+import { Chain, ContractOptions, getContract, prepareContractCall, sendAndConfirmTransaction } from "thirdweb";
 import { arbitrum, arbitrumSepolia, base, baseSepolia, optimism, optimismSepolia } from "thirdweb/chains";
 import { client, hardhatChain, wallets } from "@/app/lib/thirdweb-config";
 import { deployedContracts } from "@/globals";
 import { ConnectButton } from "thirdweb/react";
 import { useWallet } from "@/app/providers";
-import { Wallet } from "thirdweb/wallets";
+import { Wallet, Account } from "thirdweb/wallets";
 import { Header } from "@/app/components/header";
 import { ChallengeInteraction } from "@/app/components/challenge";
 import { MyChallenges } from "@/app/components/my-challenges";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
     const { wallet, chain, setWallet, setChain } = useWallet();
+    const [challengeContract, setChallengeContract] = useState<Readonly<ContractOptions<[], `0x${string}`>> | null>(null)
+    const [multiplayerChallengeContract, setMultiplayerChallengeContract] = useState<Readonly<ContractOptions<[], `0x${string}`>> | null>(null);
 
-    const handleConnect = async (wallet: Wallet) => {
-        try {
-            const response = await fetch('/api/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    payload: JSON.stringify({
-                        signature: 'your-signature',
-                        message: 'your-message',
-                        nonce: 'your-nonce',
-                    }),
-                }),
-            });
+    useEffect(() => {
+        const contractAddress = getContractAddressesFromChain();
 
-            const data = await response.json();
-            if (data.isVerifiedUser) {
-                console.log('User is verified');
-                setWallet(wallet);
-            } else {
-                console.error('User verification failed');
+        const challengeContract = (contractAddress.challenge !== "") && chain ?
+            getContract({
+                address: contractAddress.challenge,
+                chain: chain as Chain,
+                client,
+            }) : null;
+
+        const multiplayerChallengeContract = (contractAddress.multiplayerChallenge !== "") && chain ?
+            getContract({
+                address: contractAddress.multiplayerChallenge,
+                chain: chain as Chain,
+                client,
+            }) : null;
+        if (challengeContract) {
+            setChallengeContract(challengeContract);
+        }
+        if (multiplayerChallengeContract) {
+            setMultiplayerChallengeContract(multiplayerChallengeContract);
+        }
+    }, [chain])
+
+    useEffect(() => {
+        (async () => {
+            if (challengeContract && multiplayerChallengeContract) {
+                console.log("Challenge contract and multiplayer challenge contract found");
+                const addr = wallet?.getAccount()?.address || "";
+                if (wallet?.getAccount()) {
+                    const tx = prepareContractCall({
+                        contract: challengeContract as Readonly<ContractOptions<[], `0x${string}`>>,
+                        method: "function bettorWhitelist(address caller)",
+                        params: [addr]
+                    });
+                    const transactionReceipt = await sendAndConfirmTransaction({
+                        account: wallet?.getAccount() as Account,
+                        transaction: tx,
+                    });
+                    console.log("Transaction receipt: ", JSON.stringify(transactionReceipt));
+                } else {
+                    console.error('User verification failed');
+                }
             }
-            console.log("Connected to wallet");
-            setWallet(wallet);
-
             // Get and set the chain information
-            const connectedChain = await wallet.getChain();
+            const connectedChain = await wallet?.getChain();
             if (connectedChain) {
                 console.log("Connected to chain:", connectedChain);
                 // Make sure your context has a setChain function
@@ -49,6 +70,36 @@ const Dashboard = () => {
                     setChain(connectedChain);
                 }
             }
+        })()
+    }, [challengeContract, multiplayerChallengeContract, wallet])
+
+    const handleConnect = async (wallet: Wallet) => {
+        try {
+            const nonce = Date.now().toString();
+            const message = `Sign this message to verify your identity with Fitcoin. Nonce: ${nonce}`;
+            const signature = await wallet.getAccount()?.signMessage({ message });
+
+            if (!signature) {
+                throw new Error('Signature not found');
+            }
+
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    payload: JSON.stringify({
+                        signature,
+                        message,
+                        nonce,
+                    }),
+                }),
+            });
+
+            const data = await response.json();
+            console.log("Connected to wallet");
+            setWallet(wallet);
         } catch (error) {
             console.error('Error connecting:', error);
         }
@@ -85,21 +136,6 @@ const Dashboard = () => {
         }
         return contracts;
     }
-
-    const contractAddress = getContractAddressesFromChain();
-    const challengeContract = (contractAddress.challenge !== "") && chain ?
-        getContract({
-            address: contractAddress.challenge,
-            chain: chain as Chain,
-            client,
-        }) : null;
-
-    const multiplayerChallengeContract = (contractAddress.multiplayerChallenge !== "") && chain ?
-        getContract({
-            address: contractAddress.multiplayerChallenge,
-            chain: chain as Chain,
-            client,
-        }) : null;
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">

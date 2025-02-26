@@ -45,3 +45,7 @@ export const chainMap: Record<string, Chain> = {
     [arbitrum.id.toString()]: arbitrum,
     [optimism.id.toString()]: optimism,
 };
+
+export const fitbitClientId = process.env.NEXT_PUBLIC_FITBIT_CLIENT_ID || "";
+export const fitbitClientSecret = process.env.FITBIT_CLIENT_SECRET || "";
+export const fitbitRedirectUri = process.env.NEXT_PUBLIC_FITBIT_REDIRECT_URI || "";

@@ -83,7 +83,6 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
             ) : (
                 <div className="text-center py-6">
                     <p className="text-gray-700 mb-2">You have not created any challenges yet.</p>
-                    <p className="text-blue-600">Create a new challenge to get started!</p>
                 </div>
             )}
         </div>
