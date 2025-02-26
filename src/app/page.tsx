@@ -49,7 +49,25 @@ const Dashboard = () => {
                 if (wallet?.getAccount()) {
                     const tx = prepareContractCall({
                         contract: challengeContract as Readonly<ContractOptions<[], `0x${string}`>>,
-                        method: "function bettorWhitelist(address caller)",
+                        method: {
+                            "inputs": [
+                                {
+                                    "internalType": "address",
+                                    "name": "",
+                                    "type": "address"
+                                }
+                            ],
+                            "name": "bettorWhitelist",
+                            "outputs": [
+                                {
+                                    "internalType": "bool",
+                                    "name": "",
+                                    "type": "bool"
+                                }
+                            ],
+                            "stateMutability": "view",
+                            "type": "function"
+                        },
                         params: [addr]
                     });
                     const transactionReceipt = await sendAndConfirmTransaction({
@@ -61,11 +79,9 @@ const Dashboard = () => {
                     console.error('User verification failed');
                 }
             }
-            // Get and set the chain information
             const connectedChain = await wallet?.getChain();
             if (connectedChain) {
                 console.log("Connected to chain:", connectedChain);
-                // Make sure your context has a setChain function
                 if (setChain) {
                     setChain(connectedChain);
                 }

@@ -26,8 +26,8 @@ export const Header: React.FC<HeaderProps> = ({ wallet, selectedChain, setSelect
                         onChange={(e) => setSelectedChain(getChainFromId(e.target.value))}
                         className="bg-white text-black border border-gray-300 p-2 rounded-md focus:outline-none focus:border-blue-500 w-full"
                     >
-                        <option value={localhost.id.toString()}>Localhost</option>
                         <option value={hardhat.id.toString()}>Hardhat</option>
+                        <option value={localhost.id.toString()}>Localhost</option>
                         <option value={baseSepolia.id.toString()}>Base Sepolia</option>
                         <option value={arbitrumSepolia.id.toString()}>Arbitrum Sepolia</option>
                         <option value={optimismSepolia.id.toString()}>Optimism Sepolia</option>
