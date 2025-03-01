@@ -102,8 +102,13 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
                 // const signer = await ethers6Adapter.signer.toEthers({ client, chain: selectedChain, account });
                 let provider;
                 if (alchemyApiKey == "") {
-                    provider = new ethers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]);
+                    console.log("No alchemy API key");
+                    console.log("selectedChain.id.toString()", selectedChain.id.toString());
+                    const rpc = rpcMap[selectedChain.id.toString()];
+                    console.log("rpc", rpc);
+                    provider = new ethers.JsonRpcProvider(rpc);
                 } else {
+                    console.log("Alchemy API key");
                     provider = new ethers.AlchemyProvider(selectedChain.id, alchemyApiKey);
                 }
 

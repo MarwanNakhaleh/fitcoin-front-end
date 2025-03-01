@@ -19,33 +19,6 @@ const Dashboard = () => {
     const [challengeContract, setChallengeContract] = useState<Readonly<ContractOptions<[], `0x${string}`>> | null>(null)
     const [multiplayerChallengeContract, setMultiplayerChallengeContract] = useState<Readonly<ContractOptions<[], `0x${string}`>> | null>(null);
 
-    // if (challengeContract) {
-    //     const { data, isLoading } = useReadContract({
-    //         contract: challengeContract as Readonly<ContractOptions<[], `0x${string}`>>,
-    //         method: {
-    //             "inputs": [
-    //                 {
-    //                     "internalType": "address",
-    //                     "name": "",
-    //                     "type": "address"
-    //                 }
-    //             ],
-    //             "name": "bettorWhitelist",
-    //             "outputs": [
-    //                 {
-    //                     "internalType": "bool",
-    //                     "name": "",
-    //                     "type": "bool"
-    //                 }
-    //             ],
-    //             "stateMutability": "view",
-    //             "type": "function"
-    //         },
-    //         params: [wallet?.getAccount()?.address || ""],
-    //     });
-    //     console.log("data", data);
-    // }
-
     useEffect(() => {
         const contractAddress = getContractAddressesFromChain();
         console.log("contractAddress", contractAddress);

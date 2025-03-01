@@ -30,26 +30,26 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
     }, [data]);
     
     useEffect(() => {
-        const fetchChallenges = async () => {
-            console.log("Challenges loading:", isLoading);
-            if (!challengeContract || !wallet) {
-                setLoading(false);
-                return;
-            }
+        // const fetchChallenges = async () => {
+        //     console.log("Challenges loading:", isLoading);
+        //     if (!challengeContract || !wallet) {
+        //         setLoading(false);
+        //         return;
+        //     }
 
-            try {
-                setLoading(isLoading);
-                setError(null);
-                console.log("User challenges:", data);
-            } catch (err: any) {
-                console.error("Error fetching challenges:", err);
-                setError(`Error fetching challenges: ${err.message || JSON.stringify(err)}`);
-            } finally {
-                setLoading(false);
-            }
-        };
+        //     try {
+        //         setLoading(isLoading);
+        //         setError(null);
+        //         console.log("User challenges:", data);
+        //     } catch (err: any) {
+        //         console.error("Error fetching challenges:", err);
+        //         setError(`Error fetching challenges: ${err.message || JSON.stringify(err)}`);
+        //     } finally {
+        //         setLoading(false);
+        //     }
+        // };
 
-        fetchChallenges();
+        // fetchChallenges();
     }, [challengeContract, wallet, isLoading]);
 
     if (loading) {

@@ -4,7 +4,7 @@ import { challengeABI } from "@/abis/ABIs";
 import { deployedContracts, rpcMap } from "@/globals";
 import { useState } from "react";
 import { Chain } from "thirdweb";
-import { ethers5Adapter } from "thirdweb/adapters/ethers5";
+import { ethers6Adapter } from "thirdweb/adapters/ethers6";
 import { Account, Wallet } from "thirdweb/wallets";
 import { client } from "../lib/thirdweb-config";
 import { ethers } from "ethers";
@@ -40,13 +40,14 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
 
             const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
             const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
-            const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account: wallet?.getAccount() as Account });
+            const signer = await ethers6Adapter.signer.toEthers({ client, chain: selectedChain, account: wallet?.getAccount() as Account });
             
             const contractAddress = deployedContracts[selectedChain.id.toString()].challenge || "";
+            const provider = new ethers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]);
             const ethersChallengeContract = new ethers.Contract(
                 contractAddress,
                 challengeABI,
-                signer || new ethers.providers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]),
+                signer,
             );
 
             const tx = await ethersChallengeContract.createChallenge(lengthOfChallengeInSeconds, metrics, targets);

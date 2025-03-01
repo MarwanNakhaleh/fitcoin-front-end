@@ -4,9 +4,8 @@ import React, { createContext, useContext, useState } from 'react';
 import { Chain } from "thirdweb";
 import { Wallet } from "thirdweb/wallets";
 import { ThirdwebProvider } from "thirdweb/react";
-import { optimismSepolia } from "thirdweb/chains";
+import { baseSepolia } from "thirdweb/chains";
 import { Signer } from 'ethers';
-import { useSigner } from "@thirdweb-dev/react";
 
 interface WalletContextType {
     wallet: Wallet | undefined;
@@ -21,7 +20,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
     const [wallet, setWallet] = useState<Wallet | undefined>(undefined);
-    const [chain, setChain] = useState<Chain | string | undefined>(optimismSepolia);
+    const [chain, setChain] = useState<Chain | string | undefined>(baseSepolia);
     const [signer, setSigner] = useState<Signer | undefined>(undefined);
 
     return (
