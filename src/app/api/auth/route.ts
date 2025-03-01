@@ -13,9 +13,7 @@ export async function POST(request: Request) {
 
 	// Assume verification passed; now add the user to the whitelist:
 	try {
-		const recoveredAddress = ethers.utils.verifyMessage(message, signature);
-		console.log("recoveredAddress", recoveredAddress);
-		console.log("userAddress", userAddress);
+		const recoveredAddress = ethers.verifyMessage(message, signature);
 		if(recoveredAddress !== userAddress) {
 			return Response.json({ error: "Invalid signature" }, { status: 400 });
 		}

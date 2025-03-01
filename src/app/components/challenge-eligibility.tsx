@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react";
 import { Chain, prepareContractCall, sendAndConfirmTransaction } from "thirdweb";
 import { PayEmbed, useReadContract, WalletProvider } from "thirdweb/react";
-import { ethers5Adapter } from "thirdweb/adapters/ethers5";
+import { ethers6Adapter } from "thirdweb/adapters/ethers6";
 import { Account, Wallet } from "thirdweb/wallets";
 import { client } from "../lib/thirdweb-config";
 import { ethers } from "ethers";
-import { useSigner } from "@thirdweb-dev/react";
 import { challengeABI } from "@/abis/ABIs";
-import { deployedContracts, rpcMap } from "@/globals";
+import { alchemyApiKey, deployedContracts, rpcMap } from "@/globals";
 
 interface ChallengeEligibilityProps {
     challengeContract: any;
@@ -28,12 +27,10 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    console.log("challengeContract", challengeContract);
-    console.log("wallet address", wallet?.getAccount()?.address);
-
     const addBettorToWhitelist = async () => {
         const params = new URLSearchParams();
-        params.set('chainId', selectedChain.id.toString());
+        console.log("Challenge Eligibility selectedChain", selectedChain);
+        params.set('chainId', selectedChain.id.toString() || "");
         params.set('userAddress', wallet?.getAccount()?.address || "");
         const response = await fetch(`/api/bettorWhitelist?${params.toString()}`);
         const status = await response.status;
@@ -53,7 +50,7 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
         method: "function bettorWhitelist(address bettor)",
         params: [wallet?.getAccount()?.address || ""],
     });
-    
+
     useEffect(() => {
         const addBettorToWhitelist = async () => {
             try {
@@ -65,18 +62,11 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
                     return;
                 }
 
-                // Get the latest nonce from the network
-                const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account });
-
-                
-                const nonce = await signer.provider.getTransactionCount(account.address);
-
                 // Prepare the transaction
                 const transaction = prepareContractCall({
                     contract: challengeContract,
                     method: "function addBettor(address bettor)",
-                    params: [account.address || ""],
-                    nonce: nonce,
+                    params: [account.address || ""]
                 })
 
                 const transactionReceipt = await sendAndConfirmTransaction({
@@ -109,28 +99,25 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
                 }
 
                 // Get the latest nonce from the network
-                const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account });
+                // const signer = await ethers6Adapter.signer.toEthers({ client, chain: selectedChain, account });
+                let provider;
+                if (alchemyApiKey == "") {
+                    provider = new ethers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]);
+                } else {
+                    provider = new ethers.AlchemyProvider(selectedChain.id, alchemyApiKey);
+                }
 
                 const ethersChallengeContract = new ethers.Contract(
                     deployedContracts[selectedChain.id.toString()].challenge || "",
                     challengeABI,
-                    signer || new ethers.providers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]),
+                    provider,
                 );
 
-                const nonce = await signer.provider.getTransactionCount(account.address);
+                const bettorWhitelist = await ethersChallengeContract.bettorWhitelist(account.address);
+                const challenges = await ethersChallengeContract.latestChallengeId();
+                console.log("Number of challenges: " + challenges);
 
-                const transaction = prepareContractCall({
-                    contract: challengeContract,
-                    method: "function bettorWhitelist(address bettor)",
-                    params: [account.address || ""],
-                    nonce: nonce,
-                })
-
-                const transactionReceipt = await sendAndConfirmTransaction({
-                    account,
-                    transaction
-                });
-                console.log("read bettor whitelist transactionReceipt", transactionReceipt);
+                console.log("bettorWhitelist", bettorWhitelist);
             } catch (err: any) {
                 console.error("Error fetching challenges:", err);
                 setError(`Error fetching challenges: ${err.message || JSON.stringify(err)}`);
@@ -138,7 +125,7 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
                 setLoading(false);
             }
         };
-        addBettorToWhitelist();
+        //addBettorToWhitelist();
         fetchWhitelist();
     }, [challengeContract, wallet, selectedChain]);
 

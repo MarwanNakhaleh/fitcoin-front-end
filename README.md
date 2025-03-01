@@ -19,6 +19,10 @@ Install the template using [thirdweb create](https://portal.thirdweb.com/cli/cre
   npx thirdweb create app --next
 ```
 
+## Gotchas
+I didn't realize Sepolia isn't supported by Ethers v5, which was necessary to keep Thirdweb, it explains a lot.
+* https://stackoverflow.com/questions/76000755/error-unsupported-network-argument-network-value-namesepolia-chainid/77509498
+
 ## Environment Variables
 
 To run this project, you will need to add the following environment variables to your .env file:

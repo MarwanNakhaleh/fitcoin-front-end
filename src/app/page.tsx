@@ -2,7 +2,7 @@
 
 import { Chain, ContractOptions, getContract, prepareContractCall, sendAndConfirmTransaction } from "thirdweb";
 import { arbitrum, arbitrumSepolia, base, baseSepolia, optimism, optimismSepolia } from "thirdweb/chains";
-import { client, hardhatChain, wallets } from "@/app/lib/thirdweb-config";
+import { client, wallets } from "@/app/lib/thirdweb-config";
 import { deployedContracts } from "@/globals";
 import { useWallet } from "@/app/providers";
 import { Header } from "@/app/components/header";

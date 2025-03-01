@@ -8,6 +8,7 @@ import { ethers5Adapter } from "thirdweb/adapters/ethers5";
 import { Account, Wallet } from "thirdweb/wallets";
 import { client } from "../lib/thirdweb-config";
 import { ethers } from "ethers";
+
 interface CreateChallengeProps {
     challengeContract: any;
     multiplayerChallengeContract: any;

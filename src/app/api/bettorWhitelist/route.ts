@@ -29,10 +29,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const provider = new ethers.providers.JsonRpcProvider(rpc);
+    let chainIdForProvider = chainId;
+    if(chainId == "84532") {
+      chainIdForProvider = "base-sepolia";
+    }
+    const provider = new ethers.AlchemyProvider(chainIdForProvider, alchemyApiKey);
 		const wallet = new ethers.Wallet(`0x${privateKey}`, provider);
 		const contractAddress = deployedContracts[chainId].challenge || "";
-		console.log("contractAddress", contractAddress);
 		
 		// Validate contract address
 		if (!contractAddress) {
@@ -48,14 +51,23 @@ export async function GET(request: NextRequest) {
       wallet
     );
 
-		const result = await challengeContract.bettorWhitelist(userAddress);
+		let result = await challengeContract.bettorWhitelist(userAddress);
 		console.log(`is ${userAddress} in whitelist?`, result);
 		
-		// Return a proper response
-		return NextResponse.json({ 
+    if(!result) {
+      const addBettorToWhitelist = await challengeContract.addNewBettor(userAddress);
+      console.log("addBettorToWhitelist", addBettorToWhitelist);
+      result = await challengeContract.bettorWhitelist(userAddress);
+		  console.log(`NOW is ${userAddress} in whitelist?`, result);
+    }
+
+    const response = { 
       success: true, 
       isWhitelisted: result 
-    });
+    }
+    console.log("response", response);
+		// Return a proper response
+		return NextResponse.json(response);
 
   } catch (error) {
     console.error('Error fetching whitelist:', error);
