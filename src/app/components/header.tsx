@@ -1,7 +1,7 @@
 import { Wallet } from "thirdweb/wallets";
 import { Chain } from "thirdweb";
 import { arbitrum, arbitrumSepolia, base, baseSepolia, optimism, optimismSepolia, localhost, hardhat } from "thirdweb/chains";
-import { chainMap } from "@/globals";
+import { getChainFromId } from "@/globals";
 
 interface HeaderProps {
     wallet: Wallet | undefined,
@@ -10,10 +10,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ wallet, selectedChain, setSelectedChain }) => {
-    const getChainFromId = (chainId: string): Chain => {
-        return chainMap[chainId] || selectedChain;
-    };
-
     return (
         <div className="p-4 bg-zinc-800 rounded shadow">
             {wallet ? (

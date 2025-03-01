@@ -22,10 +22,16 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
         method: "function getChallengesForChallenger(address challenger)",
         params: [wallet.getAccount()?.address as string]
     });
-
+    
+    useEffect(() => {
+        if (data) {
+            setChallenges(data);
+        }
+    }, [data]);
+    
     useEffect(() => {
         const fetchChallenges = async () => {
-            console.log("IsLoading:", isLoading);
+            console.log("Challenges loading:", isLoading);
             if (!challengeContract || !wallet) {
                 setLoading(false);
                 return;
@@ -34,7 +40,6 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
             try {
                 setLoading(isLoading);
                 setError(null);
-
                 console.log("User challenges:", data);
             } catch (err: any) {
                 console.error("Error fetching challenges:", err);
@@ -83,6 +88,7 @@ export const MyChallenges: React.FC<MyChallengesProps> = ({
             ) : (
                 <div className="text-center py-6">
                     <p className="text-gray-700 mb-2">You have not created any challenges yet.</p>
+                    <p className="text-blue-600">Create a new challenge to get started!</p>
                 </div>
             )}
         </div>

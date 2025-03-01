@@ -5,12 +5,16 @@ import { Chain } from "thirdweb";
 import { Wallet } from "thirdweb/wallets";
 import { ThirdwebProvider } from "thirdweb/react";
 import { optimismSepolia } from "thirdweb/chains";
+import { Signer } from 'ethers';
+import { useSigner } from "@thirdweb-dev/react";
 
 interface WalletContextType {
     wallet: Wallet | undefined;
     chain: Chain | string | undefined;
     setWallet: (wallet: Wallet | undefined) => void;
     setChain: (chain: Chain | string | undefined) => void;
+    signer: Signer | undefined;
+    setSigner: (signer: Signer | undefined) => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -18,10 +22,11 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export const Providers = ({ children }: { children: React.ReactNode }) => {
     const [wallet, setWallet] = useState<Wallet | undefined>(undefined);
     const [chain, setChain] = useState<Chain | string | undefined>(optimismSepolia);
+    const [signer, setSigner] = useState<Signer | undefined>(undefined);
 
     return (
         <ThirdwebProvider>
-            <WalletContext.Provider value={{ wallet, chain, setWallet, setChain }}>
+            <WalletContext.Provider value={{ wallet, chain, setWallet, setChain, signer, setSigner }}>
                 {children}
             </WalletContext.Provider>
         </ThirdwebProvider>

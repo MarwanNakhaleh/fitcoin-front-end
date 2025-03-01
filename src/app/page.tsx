@@ -4,22 +4,50 @@ import { Chain, ContractOptions, getContract, prepareContractCall, sendAndConfir
 import { arbitrum, arbitrumSepolia, base, baseSepolia, optimism, optimismSepolia } from "thirdweb/chains";
 import { client, hardhatChain, wallets } from "@/app/lib/thirdweb-config";
 import { deployedContracts } from "@/globals";
-import { ConnectButton } from "thirdweb/react";
 import { useWallet } from "@/app/providers";
-import { Wallet, Account } from "thirdweb/wallets";
 import { Header } from "@/app/components/header";
 import { ChallengeInteraction } from "@/app/components/challenge";
 import { MyChallenges } from "@/app/components/my-challenges";
 import { useEffect, useState } from "react";
+import { Wallet } from "thirdweb/wallets";
+import { ChallengeEligibility } from "./components/challenge-eligibility";
+import { ConnectButton } from "thirdweb/react";
 
 const Dashboard = () => {
-    const { wallet, chain, setWallet, setChain } = useWallet();
+    const { wallet, chain, setWallet, setChain, signer, setSigner } = useWallet();
     const [challengeContract, setChallengeContract] = useState<Readonly<ContractOptions<[], `0x${string}`>> | null>(null)
     const [multiplayerChallengeContract, setMultiplayerChallengeContract] = useState<Readonly<ContractOptions<[], `0x${string}`>> | null>(null);
 
+    // if (challengeContract) {
+    //     const { data, isLoading } = useReadContract({
+    //         contract: challengeContract as Readonly<ContractOptions<[], `0x${string}`>>,
+    //         method: {
+    //             "inputs": [
+    //                 {
+    //                     "internalType": "address",
+    //                     "name": "",
+    //                     "type": "address"
+    //                 }
+    //             ],
+    //             "name": "bettorWhitelist",
+    //             "outputs": [
+    //                 {
+    //                     "internalType": "bool",
+    //                     "name": "",
+    //                     "type": "bool"
+    //                 }
+    //             ],
+    //             "stateMutability": "view",
+    //             "type": "function"
+    //         },
+    //         params: [wallet?.getAccount()?.address || ""],
+    //     });
+    //     console.log("data", data);
+    // }
+
     useEffect(() => {
         const contractAddress = getContractAddressesFromChain();
-
+        console.log("contractAddress", contractAddress);
         const challengeContract = (contractAddress.challenge !== "") && chain ?
             getContract({
                 address: contractAddress.challenge,
@@ -41,54 +69,6 @@ const Dashboard = () => {
         }
     }, [chain])
 
-    useEffect(() => {
-        (async () => {
-            if (challengeContract && multiplayerChallengeContract) {
-                console.log("Challenge contract and multiplayer challenge contract found");
-                const addr = wallet?.getAccount()?.address || "";
-                if (wallet?.getAccount()) {
-                    const tx = prepareContractCall({
-                        contract: challengeContract as Readonly<ContractOptions<[], `0x${string}`>>,
-                        method: {
-                            "inputs": [
-                                {
-                                    "internalType": "address",
-                                    "name": "",
-                                    "type": "address"
-                                }
-                            ],
-                            "name": "bettorWhitelist",
-                            "outputs": [
-                                {
-                                    "internalType": "bool",
-                                    "name": "",
-                                    "type": "bool"
-                                }
-                            ],
-                            "stateMutability": "view",
-                            "type": "function"
-                        },
-                        params: [addr]
-                    });
-                    const transactionReceipt = await sendAndConfirmTransaction({
-                        account: wallet?.getAccount() as Account,
-                        transaction: tx,
-                    });
-                    console.log("Transaction receipt: ", JSON.stringify(transactionReceipt));
-                } else {
-                    console.error('User verification failed');
-                }
-            }
-            const connectedChain = await wallet?.getChain();
-            if (connectedChain) {
-                console.log("Connected to chain:", connectedChain);
-                if (setChain) {
-                    setChain(connectedChain);
-                }
-            }
-        })()
-    }, [challengeContract, multiplayerChallengeContract, wallet])
-
     const handleConnect = async (wallet: Wallet) => {
         try {
             const nonce = Date.now().toString();
@@ -109,13 +89,19 @@ const Dashboard = () => {
                         signature,
                         message,
                         nonce,
+                        userAddress: wallet.getAccount()?.address,
+                        chain,
                     }),
                 }),
             });
 
             const data = await response.json();
-            console.log("Connected to wallet");
-            setWallet(wallet);
+            if(data.isVerifiedUser) {
+                console.log("Connected to wallet");
+                setWallet(wallet);
+            } else {
+                throw new Error('Invalid signature');
+            }
         } catch (error) {
             console.error('Error connecting:', error);
         }
@@ -133,22 +119,9 @@ const Dashboard = () => {
 
         const chainId = (chain as Chain).id.toString();
 
-        const networkByChainId: Record<string, keyof typeof deployedContracts> = {
-            [hardhatChain.chainId.toString()]: "localhost",
-            [base.id.toString()]: "base",
-            [baseSepolia.id.toString()]: "baseSepolia",
-            [arbitrum.id.toString()]: "arbitrum",
-            [arbitrumSepolia.id.toString()]: "arbitrumSepolia",
-            [optimism.id.toString()]: "optimism",
-            [optimismSepolia.id.toString()]: "optimismSepolia",
-        };
-
-        const network = networkByChainId[chainId];
-        if (network) {
-            contracts = {
-                "challenge": deployedContracts[network].challenge || "",
-                "multiplayerChallenge": deployedContracts[network].multiplayerChallenge || ""
-            }
+        contracts = {
+            "challenge": deployedContracts[chainId]?.challenge || "",
+            "multiplayerChallenge": deployedContracts[chainId]?.multiplayerChallenge || ""
         }
         return contracts;
     }
@@ -174,10 +147,18 @@ const Dashboard = () => {
             {wallet ? (
                 <>
                     {challengeContract && multiplayerChallengeContract && (
-                        <MyChallenges
-                            challengeContract={challengeContract}
-                            wallet={wallet}
-                        />
+                        <>
+                            <ChallengeEligibility
+                                challengeContract={challengeContract}
+                                multiplayerChallengeContract={multiplayerChallengeContract}
+                                wallet={wallet}
+                                selectedChain={chain as Chain}
+                            />
+                            <MyChallenges
+                                challengeContract={challengeContract}
+                                wallet={wallet}
+                            />
+                        </>
                     )}
                     <ChallengeInteraction
                         challengeContract={challengeContract}

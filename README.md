@@ -1,3 +1,9 @@
+# Fitcoin (name pending) dApp
+
+## Gotchas
+* [This took WAY longer than it should have](https://portal.thirdweb.com/react/v5/migrate/ethers-adapter#signer)
+
+# Starter documentation below
 
 ![tw-banner](https://github.com/thirdweb-example/next-starter/assets/57885104/20c8ce3b-4e55-4f10-ae03-2fe4743a5ee8)
 
