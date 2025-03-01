@@ -122,8 +122,7 @@ const Dashboard = () => {
                 <>
                     {challengeContract && multiplayerChallengeContract && (
                         <>
-                            <ConnectFitbitButton />
-                            
+                            <ConnectFitbitButton walletAddress={wallet.getAccount()?.address || ""} />
                             <ChallengeEligibility
                                 challengeContract={challengeContract}
                                 multiplayerChallengeContract={multiplayerChallengeContract}
