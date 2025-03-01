@@ -48,77 +48,99 @@ export const ChallengeEligibility: React.FC<ChallengeEligibilityProps> = ({
         void addBettorToWhitelist();
     }, [selectedChain]);
 
-    // const { data, isLoading } = useReadContract({
-    //     contract: challengeContract,
-    //     method: "function bettorWhitelist(address bettor)",
-    //     params: [wallet?.getAccount()?.address || ""],
-    // });
+    const { data, isLoading } = useReadContract({
+        contract: challengeContract,
+        method: "function bettorWhitelist(address bettor)",
+        params: [wallet?.getAccount()?.address || ""],
+    });
     
-    // useEffect(() => {
-    //     const addBettorToWhitelist = async () => {
-    //         try {
-    //             const account = wallet?.getAccount() as Account;
-    //             if (!account || !account.address) {
-    //                 console.error("Wallet account not available");
-    //                 setError("Wallet account not available");
-    //                 setLoading(false);
-    //                 return;
-    //             }
+    useEffect(() => {
+        const addBettorToWhitelist = async () => {
+            try {
+                const account = wallet?.getAccount() as Account;
+                if (!account || !account.address) {
+                    console.error("Wallet account not available");
+                    setError("Wallet account not available");
+                    setLoading(false);
+                    return;
+                }
 
-    //             // Get the latest nonce from the network
-    //             const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account });
+                // Get the latest nonce from the network
+                const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account });
 
-    //             const ethersChallengeContract = new ethers.Contract(
-    //                 deployedContracts[selectedChain.id.toString()].challenge || "",
-    //                 challengeABI,
-    //                 signer || new ethers.providers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]),
-    //             );
+                
+                const nonce = await signer.provider.getTransactionCount(account.address);
 
-    //             const nonce = await signer.provider.getTransactionCount(account.address);
+                // Prepare the transaction
+                const transaction = prepareContractCall({
+                    contract: challengeContract,
+                    method: "function addBettor(address bettor)",
+                    params: [account.address || ""],
+                    nonce: nonce,
+                })
 
-    //             // Prepare the transaction
-    //             const transaction = prepareContractCall({
-    //                 contract: challengeContract,
-    //                 method: "function addBettor(address bettor)",
-    //                 params: [account.address || ""],
-    //                 nonce: nonce,
-    //             })
+                const transactionReceipt = await sendAndConfirmTransaction({
+                    account,
+                    transaction
+                });
+                console.log("transactionReceipt", transactionReceipt);
+            } catch (err: any) {
+                console.error("Error adding bettor:", err);
+                setError(`Error adding bettor: ${err.message || JSON.stringify(err)}`);
+            } finally {
+                setLoading(false);
+            }
+        }
+        const fetchWhitelist = async () => {
+            console.log("Is loading:", isLoading);
 
-    //             const transactionReceipt = await sendAndConfirmTransaction({
-    //                 account,
-    //                 transaction
-    //             });
-    //             console.log("transactionReceipt", transactionReceipt);
-    //         } catch (err: any) {
-    //             console.error("Error adding bettor:", err);
-    //             setError(`Error adding bettor: ${err.message || JSON.stringify(err)}`);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     }
-    //     const fetchWhitelist = async () => {
-    //         console.log("Is loading:", isLoading);
+            if (!challengeContract || !wallet) {
+                setLoading(false);
+                return;
+            }
 
-    //         if (!challengeContract || !wallet) {
-    //             setLoading(false);
-    //             return;
-    //         }
+            try {
+                const account = wallet?.getAccount() as Account;
+                if (!account || !account.address) {
+                    console.error("Wallet account not available");
+                    setError("Wallet account not available");
+                    setLoading(false);
+                    return;
+                }
 
-    //         try {
-    //             setLoading(isLoading);
-    //             setError(null);
-    //             setWhitelistInfo(data);
-    //             console.log("User whitelist info:", data);
-    //         } catch (err: any) {
-    //             console.error("Error fetching challenges:", err);
-    //             setError(`Error fetching challenges: ${err.message || JSON.stringify(err)}`);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-    //     addBettorToWhitelist();
-    //     fetchWhitelist();
-    // }, [challengeContract, wallet, isLoading]);
+                // Get the latest nonce from the network
+                const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account });
+
+                const ethersChallengeContract = new ethers.Contract(
+                    deployedContracts[selectedChain.id.toString()].challenge || "",
+                    challengeABI,
+                    signer || new ethers.providers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]),
+                );
+
+                const nonce = await signer.provider.getTransactionCount(account.address);
+
+                const transaction = prepareContractCall({
+                    contract: challengeContract,
+                    method: "function bettorWhitelist(address bettor)",
+                    params: [account.address || ""],
+                    nonce: nonce,
+                })
+
+                const transactionReceipt = await sendAndConfirmTransaction({
+                    account,
+                    transaction
+                });
+                console.log("read bettor whitelist transactionReceipt", transactionReceipt);
+            } catch (err: any) {
+                console.error("Error fetching challenges:", err);
+                setError(`Error fetching challenges: ${err.message || JSON.stringify(err)}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        addBettorToWhitelist();
+        fetchWhitelist();
+    }, [challengeContract, wallet, selectedChain]);
 
     if (loading) {
         return (

@@ -1,20 +1,26 @@
 "use client";
 
+import { challengeABI } from "@/abis/ABIs";
+import { deployedContracts, rpcMap } from "@/globals";
 import { useState } from "react";
-import { prepareContractCall, sendAndConfirmTransaction } from "thirdweb";
+import { Chain } from "thirdweb";
+import { ethers5Adapter } from "thirdweb/adapters/ethers5";
 import { Account, Wallet } from "thirdweb/wallets";
-
+import { client } from "../lib/thirdweb-config";
+import { ethers } from "ethers";
 interface CreateChallengeProps {
     challengeContract: any;
     multiplayerChallengeContract: any;
     wallet: Wallet;
     onClose: () => void;
+    selectedChain: Chain;
 }
 
 export const CreateChallenge: React.FC<CreateChallengeProps> = ({
     challengeContract,
     multiplayerChallengeContract,
     wallet,
+    selectedChain,
     onClose,
 }) => {
     const [lengthOfChallenge, setLengthOfChallenge] = useState<number>(0);
@@ -33,17 +39,17 @@ export const CreateChallenge: React.FC<CreateChallengeProps> = ({
 
             const metrics = Object.keys(challengeMetricsWithTargets).map(Number);
             const targets = metrics.map(metric => challengeMetricsWithTargets[metric]);
+            const signer = await ethers5Adapter.signer.toEthers({ client, chain: selectedChain, account: wallet?.getAccount() as Account });
             
-            const tx = prepareContractCall({
-                contract: challengeContract,
-                method: "function createChallenge(uint256 _lengthOfChallenge, uint8[] calldata _challengeMetrics, uint256[] calldata _targetMeasurementsForEachMetric)",
-                params: [BigInt(lengthOfChallengeInSeconds), metrics, targets.map(t => BigInt(t))],
-            });
-            const transactionReceipt = await sendAndConfirmTransaction({
-                account: wallet.getAccount() as Account,
-                transaction: tx,
-            });
+            const contractAddress = deployedContracts[selectedChain.id.toString()].challenge || "";
+            const ethersChallengeContract = new ethers.Contract(
+                contractAddress,
+                challengeABI,
+                signer || new ethers.providers.JsonRpcProvider(rpcMap[selectedChain.id.toString()]),
+            );
 
+            const tx = await ethersChallengeContract.createChallenge(lengthOfChallengeInSeconds, metrics, targets);
+            const transactionReceipt = await tx.wait();
             setTxStatus(`Challenge created! Transaction: ${transactionReceipt.transactionHash}`);
             console.log("Challenge created");
             onClose();

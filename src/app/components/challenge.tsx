@@ -4,17 +4,19 @@ import { useState } from "react";
 import { ContractInfo } from "@/app/components/contract-info";
 import { Modal } from "@/app/components/modal";
 import { CreateChallenge } from "@/app/components/create-challenge";
-
+import { Chain } from "thirdweb";
 interface ChallengeProps {
     challengeContract: any;
     multiplayerChallengeContract: any;
     wallet: any;
+    selectedChain: Chain;
 }
 
 export const ChallengeInteraction: React.FC<ChallengeProps> = ({
     challengeContract,
     multiplayerChallengeContract,
     wallet,
+    selectedChain,
 }) => {
     const [challengeId, setChallengeId] = useState<string>("");
     const [betAmount, setBetAmount] = useState<string>("");
@@ -114,6 +116,7 @@ export const ChallengeInteraction: React.FC<ChallengeProps> = ({
                             multiplayerChallengeContract={multiplayerChallengeContract}
                             wallet={wallet}
                             onClose={() => setIsModalOpen(false)}
+                            selectedChain={selectedChain}
                         />
                     </Modal>
                     

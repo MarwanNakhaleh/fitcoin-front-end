@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Wallet } from "thirdweb/wallets";
 import { ChallengeEligibility } from "./components/challenge-eligibility";
 import { ConnectButton } from "thirdweb/react";
+import ConnectFitbitButton from "./components/connect-fitbit";
 
 const Dashboard = () => {
     const { wallet, chain, setWallet, setChain, signer, setSigner } = useWallet();
@@ -148,6 +149,8 @@ const Dashboard = () => {
                 <>
                     {challengeContract && multiplayerChallengeContract && (
                         <>
+                            <ConnectFitbitButton />
+                            
                             <ChallengeEligibility
                                 challengeContract={challengeContract}
                                 multiplayerChallengeContract={multiplayerChallengeContract}
@@ -164,6 +167,7 @@ const Dashboard = () => {
                         challengeContract={challengeContract}
                         multiplayerChallengeContract={multiplayerChallengeContract}
                         wallet={wallet}
+                        selectedChain={chain as Chain}
                     />
                 </>
             ) : (

@@ -34,7 +34,17 @@ export async function GET(request: Request) {
       console.error('Error fetching token:', tokenData);
       return NextResponse.json(tokenData, { status: tokenResponse.status });
     }
-    return NextResponse.json(tokenData, { status: 200 });
+
+    // Optionally: Set the token in a secure cookie (or store it in a session)
+    const response = NextResponse.redirect(new URL('/', request.url));
+    response.cookies.set('fitbit_access_token', tokenData.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: tokenData.expires_in, // seconds
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Token exchange error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
